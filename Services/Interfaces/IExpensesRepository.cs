@@ -1,6 +1,6 @@
-﻿using ExpensesPlanner.Shared.Models;
+﻿using ExpensesPlannerAPI.Models;
 
-namespace ExpensesPlanner.Shared.Services.Interfaces
+namespace ExpensesPlannerAPI.Services.Interfaces
 {
     public interface IExpensesRepository
     {
@@ -8,7 +8,7 @@ namespace ExpensesPlanner.Shared.Services.Interfaces
         Task<Expense> GetByIdAsync(string id);
         Task<List<Expense>> GetByNameAsync(string description);
         decimal GetTotalAmount();
-        Task CreateAsync(Expense expense);
+        Task<Expense> CreateAsync(Expense expense);
         Task UpdateAsync(string id, Expense expense);
         Task DeleteAsync(string id);
     }

@@ -1,5 +1,5 @@
-﻿using ExpensesPlanner.Shared.Models;
-using ExpensesPlanner.Shared.Services.Interfaces;
+﻿using ExpensesPlannerAPI.Models;
+using ExpensesPlannerAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExpensesPlannerAPI.Controllers
@@ -39,10 +39,10 @@ namespace ExpensesPlannerAPI.Controllers
 
         // POST api/Expenses
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Expense expense)
+        public async Task<IActionResult> Create([FromBody] Expense expense)
         {
             await _expenses.CreateAsync(expense);
-            return CreatedAtAction(nameof(GetAllExpenses), new { id = expense.Id }, expense);
+            return CreatedAtAction(nameof(GetById), new { id = expense.Id }, expense);
         }
 
         // PUT api/Expenses/5

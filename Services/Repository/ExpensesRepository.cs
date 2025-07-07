@@ -1,6 +1,6 @@
-﻿using ExpensesPlanner.Shared.Models;
-using ExpensesPlanner.Shared.Services.Interfaces;
+﻿using ExpensesPlannerAPI.Models;
 using ExpensesPlannerAPI.Data;
+using ExpensesPlannerAPI.Services.Interfaces;
 using MongoDB.Driver;
 
 namespace ExpensesPlanner.Services.Repository
@@ -14,9 +14,10 @@ namespace ExpensesPlanner.Services.Repository
             _expenses = mongoDbService.Database.GetCollection<Expense>("Expenses");
         }
 
-        public async Task CreateAsync(Expense expense)
+        public async Task<Expense> CreateAsync(Expense expense)
         {
             await _expenses.InsertOneAsync(expense);
+            return expense;
         }
 
         public async Task DeleteAsync(string id)
