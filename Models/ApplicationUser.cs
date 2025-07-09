@@ -22,11 +22,6 @@ namespace ExpensesPlannerAPI.Models
         [Required]
         public string LastName { get; set; }
 
-        [BsonElement("email"), BsonRepresentation(BsonType.String)]
-        [Required]
-        public string? Email { get; set; }
-
-
         [BsonElement("phoneNumber"), BsonRepresentation(BsonType.String)]
         public string? PhoneNumber { get; set; }
 

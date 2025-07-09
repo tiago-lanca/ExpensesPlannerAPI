@@ -2,9 +2,14 @@ using ExpensesPlanner.Services.Repository;
 using ExpensesPlannerAPI.Data;
 using ExpensesPlannerAPI.Extensions;
 using ExpensesPlannerAPI.Models;
+using ExpensesPlannerAPI.Services;
 using ExpensesPlannerAPI.Services.Interfaces;
 using ExpensesPlannerAPI.Services.Repository;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace ExpensesPlannerAPI
 {
@@ -35,11 +40,33 @@ namespace ExpensesPlannerAPI
             });
 
             builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+                .AddSignInManager<SignInManager<ApplicationUser>>()
+                .AddRoleManager<RoleManager<ApplicationRole>>()
+                .AddDefaultTokenProviders()
                 .AddMongoDbStores<ApplicationUser, ApplicationRole, Guid>(
                     builder.Configuration.GetConnectionString("DbConnection"),
                     "ExpensesPlanner");
 
-            builder.Services.AddAuthentication();
+            builder.Services.AddScoped<JwtService>();
+            builder.Services.AddAuthentication( options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"])
+                        )
+                    };
+                });
+
             builder.Services.AddAuthorization();
 
             builder.Services.AddOpenApi();
@@ -67,6 +94,7 @@ namespace ExpensesPlannerAPI
             app.UseCors(MyAllowSpecificOrigins);
             //app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

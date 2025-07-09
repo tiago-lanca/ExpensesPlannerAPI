@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using ExpensesPlannerAPI.DTO;
+﻿using ExpensesPlannerAPI.DTO;
 using ExpensesPlannerAPI.Models;
 using ExpensesPlannerAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace ExpensesPlanner.Controllers
 {
@@ -13,8 +16,11 @@ namespace ExpensesPlanner.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IUsersRepository _usersRepository;
-        public AccountController(IUsersRepository usersRepository, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        private readonly ILogger<AccountController> _logger;
+
+        public AccountController(ILogger<AccountController> logger, IUsersRepository usersRepository, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
+            _logger = logger;
             _usersRepository = usersRepository;
             _userManager = userManager;
             _signInManager = signInManager;
@@ -52,7 +58,7 @@ namespace ExpensesPlanner.Controllers
         [HttpGet("user/{id}")]
         public async Task<IActionResult> GetUserById(string id)
         {
-            var user =await _usersRepository.GetByIdAsync(id);
+            var user = await _usersRepository.GetByIdAsync(id);
 
             if (user == null)
             {
@@ -105,7 +111,7 @@ namespace ExpensesPlanner.Controllers
             user.ProfilePictureUrl = userDetails.ProfilePictureUrl;
             user.Role = userDetails.Role;
             user.ListExpensesId = userDetails.ListExpensesId;
-            
+
             await _usersRepository.UpdateAsync(user);
             return Ok(user);
         }
@@ -115,7 +121,7 @@ namespace ExpensesPlanner.Controllers
         {
             var user = await _usersRepository.GetByIdAsync(id);
 
-            if(user is null)
+            if (user is null)
             {
                 return NotFound($"User with ID {id} not found.");
             }
@@ -125,28 +131,23 @@ namespace ExpensesPlanner.Controllers
 
         }
 
-        /*[HttpPost("upload")]
-        public async Task<IActionResult> UploadProfilePicture(IFormFile file)
+        [Authorize]
+        [HttpGet("user/photo")]
+        public async Task<IActionResult> GetUserProfilePicture()
         {
-            if(file == null || file.Length == 0)
-            {
-                return BadRequest("No file uploaded.");
-            }
-
-            var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
             
-            if(!Directory.Exists(uploadsPath)) Directory.CreateDirectory(uploadsPath);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            _logger.LogInformation($"UserId: {userId}");
 
-            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
-            var filePath = Path.Combine(uploadsPath, fileName);
+            var user = await _usersRepository.GetByIdAsync(userId);
+            _logger.LogInformation($"User: {user?.FirstName} {user?.ProfilePictureUrl}");
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            if (user is null || user.ProfilePictureUrl is null)
             {
-                await file.CopyToAsync(stream);
+                return NotFound("User or profile picture not found.");
             }
 
-            var publicUrl = $"/uploads/{fileName}"; // Adjust this based on your server setup   
-            return Ok(publicUrl);
-        }*/
+            return File(user.ProfilePictureUrl, "image/jpeg");
+        }
     }
 }
