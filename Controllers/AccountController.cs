@@ -137,10 +137,8 @@ namespace ExpensesPlanner.Controllers
         {
             
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            _logger.LogInformation($"UserId: {userId}");
 
             var user = await _usersRepository.GetByIdAsync(userId);
-            _logger.LogInformation($"User: {user?.FirstName} {user?.ProfilePictureUrl}");
 
             if (user is null || user.ProfilePictureUrl is null)
             {

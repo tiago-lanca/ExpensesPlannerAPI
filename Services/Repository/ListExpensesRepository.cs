@@ -42,5 +42,18 @@ namespace ExpensesPlannerAPI.Services.Repository
             await _listExpenses.ReplaceOneAsync(x => x.Id == listExpenses.Id, listExpenses);
         }
 
+        public async Task DeleteExpense(string id, string listId)
+        {
+            var listExpenses = await GetListByIdAsync(listId);
+
+            // Search for a list which id mataches with listExpenses.Id
+            var filter = Builders<ListExpenses>.Filter.Eq(list => list.Id, listExpenses.Id);
+
+            // Create an update operation to remove the expense with the specified [string id] PullFilter removes the tem from the array
+            var update = Builders<ListExpenses>.Update.PullFilter(list => list.Expenses, exp => exp.Id == id);
+
+            await _listExpenses.UpdateOneAsync(filter, update);
+        }
+
     }
 }

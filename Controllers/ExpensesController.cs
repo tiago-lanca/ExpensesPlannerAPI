@@ -1,5 +1,6 @@
 ﻿using ExpensesPlannerAPI.Models;
 using ExpensesPlannerAPI.Services.Interfaces;
+using ExpensesPlannerAPI.Services.Repository;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExpensesPlannerAPI.Controllers
@@ -9,10 +10,12 @@ namespace ExpensesPlannerAPI.Controllers
     public class ExpensesController : ControllerBase
     {
         private readonly IExpensesRepository _expenses;
+        private readonly ListExpensesRepository _listExpenses;
 
-        public ExpensesController(IExpensesRepository expenses)
+        public ExpensesController(IExpensesRepository expenses, ListExpensesRepository listExpenses)
         {
             _expenses = expenses;
+            _listExpenses = listExpenses;
         }
 
         // GET: api/Expenses
@@ -64,6 +67,9 @@ namespace ExpensesPlannerAPI.Controllers
             Expense existingExpense = await _expenses.GetByIdAsync(id);
             if(existingExpense is null) return NotFound($"Expense with ID {id} not found.");
             await _expenses.DeleteAsync(id.ToString());
+
+            await _listExpenses.DeleteExpense(id, existingExpense.ListExpensesId);
+
             return NoContent();
         }
     }
