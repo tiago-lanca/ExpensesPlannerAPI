@@ -44,6 +44,7 @@ namespace ExpensesPlannerAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Expense expense)
         {
+            expense.Category = expense.Category.ToString();
             await _expenses.CreateAsync(expense);
             return CreatedAtAction(nameof(GetById), new { id = expense.Id }, expense);
         }
@@ -56,7 +57,11 @@ namespace ExpensesPlannerAPI.Controllers
             if(existingExpense is null) return NotFound($"Expense with ID {id} not found.");
 
             expense.Id = id;
+            expense.Category = expense.Category.ToString();
             await _expenses.UpdateAsync(id.ToString(), expense);
+
+            await _listExpenses.UpdateExpenseAsync(expense);
+
             return NoContent();
         }
 

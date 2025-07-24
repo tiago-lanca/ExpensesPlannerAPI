@@ -34,12 +34,27 @@ namespace ExpensesPlannerAPI.Services.Repository
             return await _listExpenses.Find(x => x.UserId == id).FirstOrDefaultAsync();
         }
 
-        public async Task UpdateAsync(ListExpenses listExpenses)
+        public async Task UpdateListAsync(ListExpenses listExpenses)
         {
             if(listExpenses == null)
                 throw new ArgumentNullException(nameof(listExpenses), "List cannot be null");
 
             await _listExpenses.ReplaceOneAsync(x => x.Id == listExpenses.Id, listExpenses);
+        }
+
+        public async Task UpdateExpenseAsync(Expense newExpense)
+        {
+            var listExpenses = await GetListByIdAsync(newExpense.ListExpensesId);
+            if (listExpenses == null)
+                throw new ArgumentNullException(nameof(listExpenses), "List cannot be null");
+
+            var expense = listExpenses.Expenses.Find(exp => exp.Id == newExpense.Id);
+            expense.Description = newExpense.Description;
+            expense.Amount = newExpense.Amount;
+            expense.CreationDate = newExpense.CreationDate;
+            expense.Category = newExpense.Category;
+
+            await UpdateListAsync(listExpenses);
         }
 
         public async Task DeleteExpense(string id, string listId)

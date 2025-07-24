@@ -61,7 +61,7 @@ namespace ExpensesPlannerAPI.Controllers
 
             newList.Expenses.Last().ListExpensesId = newList.Id; // Update the last expense's ListExpensesId to match the list's ID
 
-            await _listExpensesRepository.UpdateAsync(newList);
+            await _listExpensesRepository.UpdateListAsync(newList);
 
             return Ok(newList);
         }

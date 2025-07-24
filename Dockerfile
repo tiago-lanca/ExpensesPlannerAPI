@@ -27,8 +27,8 @@ RUN dotnet publish "./ExpensesPlannerAPI.csproj" -c $BUILD_CONFIGURATION -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY devcert.pfc /https/devcert.pfc
+COPY devcert.pfx /https/devcert.pfx
 ENV ASPNETCORE_URLS=http://+:8080;https://+:8081
-ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/https/devcert.pfc
+ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/https/devcert.pfx
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=123456
 ENTRYPOINT ["dotnet", "ExpensesPlannerAPI.dll"]
